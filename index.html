@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Map Quiz</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+      z-index: 1;
+    }
+
+    /* Question overlay */
+    #ui {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px 18px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    #question {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #message {
+      margin-top: 6px;
+    }
+
+    button {
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Map goes first -->
+<div id="map"></div>
+
+<!-- Quiz UI overlay -->
+<div id="ui">
+  <div id="question">Loading...</div>
+  <div id="message"></div>
+  <button id="checkBtn">Check Answer</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // QUESTIONS
+  const questions = [
+    {
+      question: "A famous European capital has been moved far to the South! Can you spot it, or will you need a microscope?",
+      lat: 1.9285050586460943,
+      lng: -157.49696095357345,
+      radius: 1000
+    },
+    {
+      question: "The city of love may be in Paris but that does not stop love from swimming around elsewhere.",
+      lat: 43.9784995,
+      lng: 15.3832341,
+      radius: 325
+    },
+    {
+      question: "Talking to people is overrated! Let us travel away and learn how to speak to these descendants of dinosaurs.",
+      lat: 40.87410749725884,
+      lng: 39.04899936090457,
+      radius: 5000
+    },
+    {
+      question: "We hope you have been sticking to legal methods of research! For all you know, a street light could be enough to arrest you.",
+      lat: 51.507995338592856,
+      lng: -0.12728206759417438,
+      radius: 100
+    },
+    {
+      question: "The devil has always been symbolized by misfortune and a decade after his year that seems to be especially true.",
+      lat: 51.510135650634766,
+      lng: -0.08594869822263718,
+      radius: 100
+    },
+    {
+      question: "There is no surprise American education is so poor when they even choose to hide their books like this.",
+      lat:  43.8794033,
+      lng: -103.4598048,
+      radius: 500
+    },
+    {
+      question: "To travel around the world it seems you must relax at a sandy point first, but where does your trip end?",
+      lat: 53.7435722,
+      lng: -0.3394758,
+      radius: 4000
+    },
+    {
+      question: "Of all the things a white male youtuber could be canceled for, it somehow is not even that shocking that this could be one of them.",
+      lat: 35.452828,
+      lng: 138.649635,
+      radius: 19000
+    },
+    {
+      question: "Where do we get when the human need for resources brings us to the very thing we are supposed to be most afraid of?",
+      lat: 40.2525653,
+      lng: 58.4396147,
+      radius: 100
+    },
+    {
+      question: "Would bigger eyes help you in finding the correct locations? Perhaps ones with a span of 40 cm? Maybe looking at a photo of them will help.",
+      lat: -54.35325054482737,
+      lng: -36.61137956561581,
+      radius: 766503
+    },
+    {
+      question: "Okay, we know you've had enough of repeating hints by now, so maybe it is time to turn the page. Actually, you should go here to be the first one to do so.",
+      lat: 1.8669481897321132,
+      lng: -157.397895966119,
+      radius: 30000
+    },
+    {
+      question: "Some places grow upward out of necessity. Others never really needed to. Find the city where vertical convenience is rare enough that you could count it on one hand and still have fingers left.",
+      lat: 42.8501191,
+      lng: -106.325138,
+      radius: 5000
+    },
+    {
+      question: "Fighting against an oppressive system should be in your blood, but judging by where you are standing right now, a lot of oil might be as well. That can not be very healthy.",
+      lat: 40.47969305249188,
+      lng: -78.40245351678047,
+      radius: 100
+    },
+    {
+      question: "Is this the first flash mob recorded in history? We do not know, but it feels like we are just gonna perish if we don’t join in!",
+      lat: 48.584614,
+      lng: 7.7507127,
+      radius: 10000
+    },
+    {
+      question: "A true artist knows how to make the observer fall in love with their artwork as well. But how does one express their love to this absolute mystery?",
+      lat: 48.86067495179529,
+      lng: 2.3376737639923606,
+      radius: 325
+    },
+    {
+      question: "The French were quite helpful in the American Revolution, but to these people, it seems they were not much more useful than the tip of their tongue.",
+      lat: 38.5502547,
+      lng: -86.6199659,
+      radius: 1700
+    },
+    {
+      question: "Place the marker where time itself is counted differently.",
+      lat: 10.2116702,
+      lng: 38.6521203,
+      radius: 900000
+    },
+    {
+      question: "Identify the place where water behaves like fire in the heart of the jungle.",
+      lat: -8.8071573,
+      lng: -74.7215625,
+      radius: 254695
+    },
+    {
+      question: "Is this water or is this bubblegum? One thing is for sure, this will be a truly amazing sight.",
+      lat: -34.0945358,
+      lng: 123.2027922,
+      radius: 440
+    },
+    {
+      question: "Point to the place where the earth can grab you",
+      lat: -24.158395507264323,
+      lng: -70.15644936239215,
+      radius: 100
+    },
+    {
+      question: "4 dictators in one town, yet none of them held any power",
+      lat: 48.2083537,
+      lng: 16.3725042,
+      radius: 8000
+    },
+    {
+      question: "When something keeps eating your hard work, you might want justice. But if the accused can not safely travel because of their natural enemies, the case becomes… complicated.",
+      lat: 46.9510313,
+      lng: 4.2989478,
+      radius: 1600
+    },
+    {
+      question: "A place where a famous leader lost his head last year ",
+      lat: 46.3592869,
+      lng: 15.1150301,
+      radius: 2000
+    },
+    {
+      question: "One single country hated by all for but a day ",
+      lat: 42.6073975,
+      lng: 25.4856617,
+      radius: 270000
+    },
+    {
+      question: "A superhero? A god? A well?",
+      lat: 44.27842109089273,
+      lng: -124.11352831793275,
+      radius: 200
+    },
+    {
+      question: "A royal birthday gift, sadly never seen",
+      lat: 22.051130859372318,
+      lng: 96.01003475624964,
+      radius: 671140
+    },
+    {
+      question: "A plane littered with pottery",
+      lat: 19.293027537592916,
+      lng: 103.15048766051223,
+      radius: 1031
+    }
+  ];
+
+  let currentQuestion = 0;
+  let marker = null;
+  let selectedLatLng = null;
+  let lockedUntil = 0;
+
+  // MAP SETUP (English labels)
+  const map = L.map('map', {
+    zoomControl: true
+  }).setView([20, 0], 2);
+
+ // Default English map
+const lightMap = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/light_all/%7Bz%7D/%7Bx%7D/%7By%7D%7Br%7D.png',
+  {
+    attribution: '© OpenStreetMap © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }
+).addTo(map);
+
+// Satellite layer
+const satelliteMap = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D',
+  {
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  }
+);
+
+// Layer switch control
+L.control.layers(
+  {
+    "Map": lightMap,
+    "Satellite": satelliteMap
+  },
+  null,
+  { position: 'topright' }
+).addTo(map);
+
+  // CLICK TO PLACE PIN
+  map.on('click', function (e) {
+    if (marker) map.removeLayer(marker);
+    marker = L.marker(e.latlng).addTo(map);
+    selectedLatLng = e.latlng;
+  });
+
+  // LOAD QUESTION
+  function loadQuestion() {
+    document.getElementById("question").textContent =
+      questions[currentQuestion].question;
+    document.getElementById("message").textContent = "";
+    if (marker) map.removeLayer(marker);
+    marker = null;
+    selectedLatLng = null;
+  }
+
+  loadQuestion();
+
+  // CHECK ANSWER
+  document.getElementById("checkBtn").addEventListener("click", () => {
+    const now = Date.now();
+    if (now < lockedUntil) {
+      alert("You must wait before trying again!");
+      return;
+    }
+
+    if (!selectedLatLng) {
+      alert("Place a pin first!");
+      return;
+    }
+
+    const correct = questions[currentQuestion];
+
+    const distance = map.distance(
+      [correct.lat, correct.lng],
+      [selectedLatLng.lat, selectedLatLng.lng]
+    );
+
+    if (distance <= correct.radius) {
+      document.getElementById("message").textContent = "✅ Correct!";
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+        setTimeout(loadQuestion, 1500);
+      } else {
+        document.getElementById("question").textContent = "🎉 All done!";
+        document.getElementById("message").textContent = "";
+      }
+    } else {
+      document.getElementById("message").textContent =
+        "❌ Wrong! Wait 5 minutes.";
+      lockedUntil = Date.now() + 5 * 60 * 1000;
+    }
+  });
+</script>
+
+</body>
+</html>
+
