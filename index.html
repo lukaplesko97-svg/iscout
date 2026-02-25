@@ -243,33 +243,13 @@
     zoomControl: true
   }).setView([20, 0], 2);
 
- // Default English map
-const lightMap = L.tileLayer(
+L.tileLayer(
   'https://{s}.basemaps.cartocdn.com/light_all/%7Bz%7D/%7Bx%7D/%7By%7D%7Br%7D.png',
   {
     attribution: '© OpenStreetMap © CARTO',
     subdomains: 'abcd',
     maxZoom: 19
   }
-).addTo(map);
-
-// Satellite layer
-const satelliteMap = L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D',
-  {
-    attribution: 'Tiles © Esri',
-    maxZoom: 19
-  }
-);
-
-// Layer switch control
-L.control.layers(
-  {
-    "Map": lightMap,
-    "Satellite": satelliteMap
-  },
-  null,
-  { position: 'topright' }
 ).addTo(map);
 
   // CLICK TO PLACE PIN
@@ -331,4 +311,3 @@ L.control.layers(
 
 </body>
 </html>
-
